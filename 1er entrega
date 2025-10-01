@@ -1,0 +1,113 @@
+# Clase Usuario
+class Usuario:
+    def __init__(self, nombre: str, email: str):
+        self.__nombre = nombre  # atributo privado
+        self.__email = email    # atributo privado
+        self.__carpetas = []    # lista de carpetas
+
+    # Métodos de acceso (getters y setters)
+    @property
+    def nombre(self):
+        return self.__nombre
+
+    @nombre.setter
+    def nombre(self, valor):
+        self.__nombre = valor
+
+    @property
+    def email(self):
+        return self.__email
+
+    @email.setter
+    def email(self, valor):
+        self.__email = valor
+
+    def agregar_carpeta(self, carpeta):
+        self.__carpetas.append(carpeta)
+
+    def listar_carpetas(self):
+        return [c.nombre for c in self.__carpetas]
+
+    def obtener_carpeta(self, nombre: str):
+        return next((c for c in self.__carpetas if c.nombre == nombre), None)
+
+
+# Clase Mensaje
+class Mensaje:
+    def __init__(self, remitente: Usuario, destinatario: Usuario, asunto: str, contenido: str):
+        self.__remitente = remitente
+        self.__destinatario = destinatario
+        self.__asunto = asunto
+        self.__contenido = contenido
+
+    @property
+    def remitente(self):
+        return self.__remitente
+
+    @property
+    def destinatario(self):
+        return self.__destinatario
+
+    @property
+    def asunto(self):
+        return self.__asunto
+
+    @property
+    def contenido(self):
+        return self.__contenido
+
+
+# Clase Carpeta
+class Carpeta:
+    def __init__(self, nombre: str):
+        self.__nombre = nombre
+        self.__mensajes: List[Mensaje] = []
+
+    @property
+    def nombre(self):
+        return self.__nombre
+
+    def agregar_mensaje(self, mensaje: Mensaje):
+        self.__mensajes.append(mensaje)
+
+    def listar_mensajes(self):
+        return [(m.remitente.nombre, m.asunto) for m in self.__mensajes]
+
+
+# Clase ServidorCorreo
+class ServidorCorreo:
+    def __init__(self):
+        self.__usuarios: List[Usuario] = []
+
+    def registrar_usuario(self, usuario: Usuario):
+        self.__usuarios.append(usuario)
+
+    def enviar_mensaje(self, mensaje: Mensaje):
+        destinatario = mensaje.destinatario
+        # Buscamos la carpeta "Inbox" del destinatario usando el método público
+        inbox = destinatario.obtener_carpeta("Inbox")
+        if inbox:
+            inbox.agregar_mensaje(mensaje)
+        else:
+            print("El usuario no tiene carpeta Inbox.")
+
+
+# Ejemplo de uso
+usuario1 = Usuario("Gastón", "gaston@gmail.com")
+usuario2 = Usuario("Tomás", "tomas@gmail.com")
+
+inbox1 = Carpeta("Inbox")
+inbox2 = Carpeta("Inbox")
+
+usuario1.agregar_carpeta(inbox1)
+usuario2.agregar_carpeta(inbox2)
+
+servidor = ServidorCorreo()
+servidor.registrar_usuario(usuario1)
+servidor.registrar_usuario(usuario2)
+
+mensaje = Mensaje(remitente=usuario1, destinatario=usuario2, asunto="Hola", contenido="¡Qué tal!")
+servidor.enviar_mensaje(mensaje)
+
+print(usuario2.listar_carpetas())        # ['Inbox']
+print(inbox2.listar_mensajes())          # [('Gastón', 'Hola')]
